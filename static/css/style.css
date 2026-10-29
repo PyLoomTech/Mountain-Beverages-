@@ -1,0 +1,98 @@
+:root {
+  --brand-navy: #0f2c73;
+  --brand-blue: #1c8ee0;
+  --brand-green: #1e7a34;
+  --brand: var(--brand-navy);
+  --brand-dark: #0a1f55;
+}
+
+/* ---------- Brand colours on Bootstrap components ---------- */
+.bg-brand { background-color: var(--brand-navy); }
+
+.btn-primary {
+  --bs-btn-bg: var(--brand-blue);
+  --bs-btn-border-color: var(--brand-blue);
+  --bs-btn-hover-bg: var(--brand-navy);
+  --bs-btn-hover-border-color: var(--brand-navy);
+  --bs-btn-active-bg: var(--brand-navy);
+  --bs-btn-active-border-color: var(--brand-navy);
+  --bs-btn-disabled-bg: var(--brand-blue);
+  --bs-btn-disabled-border-color: var(--brand-blue);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--brand-blue);
+  --bs-btn-border-color: var(--brand-blue);
+  --bs-btn-hover-bg: var(--brand-blue);
+  --bs-btn-hover-border-color: var(--brand-blue);
+  --bs-btn-active-bg: var(--brand-navy);
+  --bs-btn-active-border-color: var(--brand-navy);
+}
+
+.text-primary { color: var(--brand-blue) !important; }
+
+/* ---------- Navbar (white, matches the logo) ---------- */
+.navbar-logo { height: 52px; width: auto; }
+.navbar-brand-text { color: var(--brand-navy); }
+
+.navbar .nav-link {
+  color: var(--brand-navy);
+  font-weight: 500;
+}
+.navbar .nav-link:hover { color: var(--brand-blue); }
+.navbar .nav-link.active {
+  color: var(--brand-blue);
+  border-bottom: 2px solid var(--brand-blue);
+}
+
+.offcanvas-logo { height: 44px; width: auto; }
+
+/* ---------- Hero and page headers ---------- */
+.hero {
+  min-height: 70vh;
+  background: linear-gradient(135deg, var(--brand-navy), var(--brand-blue));
+  background-size: cover;
+  background-position: center;
+}
+
+.page-header {
+  background: linear-gradient(135deg, var(--brand-navy), var(--brand-blue));
+}
+
+/* ---------- Section titles ---------- */
+.section-title {
+  position: relative;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  color: var(--brand-navy);
+}
+.section-title::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: var(--brand-green);
+  margin-top: 8px;
+}
+.text-center.section-title::after,
+.text-center .section-title::after { margin-left: auto; margin-right: auto; }
+
+/* ---------- Products ---------- */
+.product-card { transition: transform .2s, box-shadow .2s; }
+.product-card:hover { transform: translateY(-4px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important; }
+
+.product-img { height: 200px; object-fit: cover; width: 100%; }
+
+.placeholder-img { background: #e9f2f8; color: var(--brand-blue); }
+.detail-placeholder { height: 380px; }
+
+/* ---------- Footer ---------- */
+.footer-logo {
+  height: 120px;
+  width: auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 6px;
+}
+.footer-link { color: #adb5bd; text-decoration: none; }
+.footer-link:hover { color: #fff; }

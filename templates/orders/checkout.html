@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout | {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<section class="page-header text-white text-center py-5">
+  <div class="container"><h1>Checkout</h1></div>
+</section>
+
+<div class="container py-5">
+  <div class="row g-5">
+
+    <div class="col-lg-7">
+      <h3 class="section-title">Delivery details</h3>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "includes/_form_fields.html" %}
+        <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
+        <a href="{% url 'cart_detail' %}" class="btn btn-outline-secondary btn-lg">Back to cart</a>
+      </form>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h4>Order summary</h4>
+          <ul class="list-group list-group-flush mb-3">
+            {% for item in items %}
+              <li class="list-group-item d-flex justify-content-between">
+                <span>{{ item.quantity }} &times; {{ item.product.name }}</span>
+                <span>NPR {{ item.subtotal|floatformat:2 }}</span>
+              </li>
+            {% endfor %}
+            <li class="list-group-item d-flex justify-content-between fw-bold">
+              <span>Total</span>
+              <span class="text-primary">NPR {{ total|floatformat:2 }}</span>
+            </li>
+          </ul>
+          <p class="text-muted small mb-0">Our team will contact you to confirm this order.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

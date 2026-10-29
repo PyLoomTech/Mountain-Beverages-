@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Products | {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<section class="page-header text-white text-center py-5">
+  <div class="container"><h1>Our Products</h1></div>
+</section>
+
+<div class="container py-5">
+
+  <!-- Search and category filter -->
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-md-5">
+      <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search products...">
+    </div>
+    <div class="col-md-4">
+      <select name="category" class="form-select">
+        <option value="">All categories</option>
+        {% for category in categories %}
+          <option value="{{ category.slug }}" {% if category.slug == selected %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-grid d-md-flex gap-2">
+      <button class="btn btn-primary" type="submit">Filter</button>
+      <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">Reset</a>
+    </div>
+  </form>
+
+  <div class="row g-4">
+    {% for product in products %}
+      <div class="col-6 col-md-4 col-lg-3">
+        {% include "catalog/_product_card.html" %}
+      </div>
+    {% empty %}
+      <p class="text-center text-muted">No products found.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

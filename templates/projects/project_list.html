@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Projects | {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<section class="page-header text-white text-center py-5">
+  <div class="container"><h1>Our Projects</h1></div>
+</section>
+
+<div class="container py-5">
+  <div class="row g-4">
+    {% for project in projects %}
+      <div class="col-md-6 col-lg-4">
+        {% include "projects/_project_card.html" %}
+      </div>
+    {% empty %}
+      <p class="text-center text-muted">No projects published yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

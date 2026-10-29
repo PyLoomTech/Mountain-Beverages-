@@ -1,0 +1,9 @@
+{% if order.status == "pending" %}
+  <span class="badge bg-warning text-dark">Pending</span>
+{% elif order.status == "confirmed" %}
+  <span class="badge bg-primary">Confirmed</span>
+{% elif order.status == "delivered" %}
+  <span class="badge bg-success">Delivered</span>
+{% elif order.status == "cancelled" %}
+  <span class="badge bg-danger">Cancelled</span>
+{% endif %}

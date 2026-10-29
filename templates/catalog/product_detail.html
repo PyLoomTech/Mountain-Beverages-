@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} | {{ site.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Products</a></li>
+      <li class="breadcrumb-item active">{{ product.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-5">
+    <div class="col-md-5">
+      {% if product.image %}
+        <img src="{{ product.image.url }}" class="img-fluid rounded shadow-sm" alt="{{ product.name }}">
+      {% else %}
+        <div class="placeholder-img detail-placeholder rounded d-flex align-items-center justify-content-center">
+          <i class="bi bi-droplet" style="font-size:6rem;"></i>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="col-md-7">
+      <span class="badge bg-info text-dark">{{ product.category.name }}</span>
+      <h1 class="mt-2">{{ product.name }}</h1>
+      <h3 class="text-primary">NPR {{ product.price|floatformat:2 }} <small class="text-muted fs-6">/ {{ product.unit }}</small></h3>
+
+      {% if product.is_available %}
+        <p><span class="badge bg-success">Available</span></p>
+      {% else %}
+        <p><span class="badge bg-secondary">Currently unavailable</span></p>
+      {% endif %}
+
+      <p>{{ product.description|linebreaksbr }}</p>
+
+      {% if product.spec_list %}
+        <h5>Specifications</h5>
+        <ul>
+          {% for spec in product.spec_list %}<li>{{ spec }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if product.is_available %}
+        <form method="post" action="{% url 'cart_add' product.id %}" class="row g-2 align-items-center mt-3">
+          {% csrf_token %}
+          <div class="col-auto">
+            <label for="qty" class="visually-hidden">Quantity</label>
+            <input type="number" id="qty" name="quantity" value="1" min="1" max="999" class="form-control form-control-lg" style="width:110px;">
+          </div>
+          <div class="col-auto">
+            <button type="submit" name="action" value="add" class="btn btn-outline-primary btn-lg">
+              <i class="bi bi-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+          <div class="col-auto">
+            <button type="submit" name="action" value="buy" class="btn btn-primary btn-lg">
+              Order Now
+            </button>
+          </div>
+        </form>
+      {% else %}
+        <button class="btn btn-secondary btn-lg" disabled>Unavailable</button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if related %}
+    <h3 class="section-title mt-5 mb-4">Related Products</h3>
+    <div class="row g-4">
+      {% for product in related %}
+        <div class="col-6 col-md-3">
+          {% include "catalog/_product_card.html" %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

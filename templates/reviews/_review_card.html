@@ -1,0 +1,16 @@
+<div class="card h-100 shadow-sm">
+  <div class="card-body">
+    <div class="mb-2">
+      {% for i in "12345" %}
+        {% if forloop.counter <= review.rating %}
+          <i class="bi bi-star-fill text-warning"></i>
+        {% else %}
+          <i class="bi bi-star text-warning"></i>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <p class="card-text">"{{ review.comment|linebreaksbr }}"</p>
+    <p class="fw-bold mb-0">{{ review.customer.first_name|default:review.customer.username }}</p>
+    <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+  </div>
+</div>

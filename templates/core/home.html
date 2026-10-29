@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="hero d-flex align-items-center text-white"
+  {% if site.hero_image %}style="background-image: linear-gradient(rgba(0,40,70,.65), rgba(0,40,70,.65)), url('{{ site.hero_image.url }}');"{% endif %}>
+  <div class="container text-center py-5">
+    <h1 class="display-4 fw-bold">{{ site.hero_title|default:site.company_name }}</h1>
+    <p class="lead">{{ site.hero_subtitle|default:site.tagline }}</p>
+    <a href="{% url 'product_list' %}" class="btn btn-light btn-lg me-2">Browse Products</a>
+    <a href="{% url 'contact' %}" class="btn btn-outline-light btn-lg">Contact Us</a>
+  </div>
+</section>
+
+<!-- Company introduction -->
+<section class="container py-5">
+  <div class="row justify-content-center text-center">
+    <div class="col-lg-8">
+      <h2 class="section-title">Who We Are</h2>
+      <p class="text-muted">{{ site.about_text|truncatewords:60|default:"Company introduction will appear here." }}</p>
+      <a href="{% url 'about' %}" class="btn btn-outline-primary">Learn more</a>
+    </div>
+  </div>
+</section>
+
+<!-- Featured products -->
+<section class="bg-light py-5">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">Featured Products</h2>
+    <div class="row g-4">
+      {% for product in featured_products %}
+        <div class="col-6 col-md-3">
+          {% include "catalog/_product_card.html" %}
+        </div>
+      {% empty %}
+        <p class="text-center text-muted">No products yet.</p>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+      <a href="{% url 'product_list' %}" class="btn btn-primary">View all products</a>
+    </div>
+  </div>
+</section>
+
+<!-- Featured projects -->
+<section class="container py-5">
+  <h2 class="section-title text-center mb-4">Our Projects</h2>
+  <div class="row g-4">
+    {% for project in featured_projects %}
+      <div class="col-md-4">
+        {% include "projects/_project_card.html" %}
+      </div>
+    {% empty %}
+      <p class="text-center text-muted">No projects yet.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Customer reviews -->
+<section class="bg-light py-5">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">What Customers Say</h2>
+    <div class="row g-4">
+      {% for review in reviews %}
+        <div class="col-md-4">
+          {% include "reviews/_review_card.html" %}
+        </div>
+      {% empty %}
+        <p class="text-center text-muted">No reviews yet. Be the first to share your experience!</p>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+      <a href="{% url 'review_list' %}" class="btn btn-outline-primary me-2">Read all reviews</a>
+      <a href="{% url 'review_create' %}" class="btn btn-primary">Write a review</a>
+    </div>
+  </div>
+</section>
+
+<!-- Call to action -->
+<section class="bg-brand text-white text-center py-5">
+  <div class="container">
+    <h2>Ready to place an order?</h2>
+    <p>Browse our range and order online in a few steps.</p>
+    <a href="{% url 'product_list' %}" class="btn btn-light btn-lg">Start Ordering</a>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,19 @@
+<div class="card h-100 shadow-sm">
+  <a href="{% url 'project_detail' project.slug %}">
+    {% if project.cover_image %}
+      <img src="{{ project.cover_image.url }}" class="card-img-top product-img" alt="{{ project.title }}">
+    {% else %}
+      <div class="product-img placeholder-img d-flex align-items-center justify-content-center">
+        <i class="bi bi-image fs-1"></i>
+      </div>
+    {% endif %}
+  </a>
+  <div class="card-body">
+    {% if project.category %}<span class="badge bg-info text-dark">{{ project.category }}</span>{% endif %}
+    <h5 class="card-title mt-2">
+      <a href="{% url 'project_detail' project.slug %}" class="text-decoration-none text-dark">{{ project.title }}</a>
+    </h5>
+    <p class="card-text small text-muted">{{ project.description|truncatewords:20 }}</p>
+    <small class="text-muted"><i class="bi bi-calendar"></i> {{ project.date|date:"d M Y" }}</small>
+  </div>
+</div>
