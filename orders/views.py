@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -9,6 +10,10 @@ from catalog.models import Product
 from .cart import MAX_QUANTITY, Cart
 from .forms import CheckoutForm
 from .models import Order, OrderItem
+
+
+def is_ajax(request):
+    return request.headers.get("x-requested-with") == "XMLHttpRequest"
 
 
 # ---------- Cart ----------
@@ -28,12 +33,20 @@ def cart_add(request, product_id):
         quantity = 1
     quantity = max(1, min(quantity, MAX_QUANTITY))
 
-    Cart(request).add(product, quantity)
+    cart = Cart(request)
+    cart.add(product, quantity)
 
+    # "Order Now" goes straight to checkout
     if request.POST.get("action") == "buy":
         return redirect("checkout")
 
-    messages.success(request, f"{product.name} added to your cart.")
+    message = f"{product.name} added to your cart."
+
+    # "Add to Cart" from the product page: answer the background request, no page change
+    if is_ajax(request):
+        return JsonResponse({"ok": True, "message": message, "cart_count": cart.count()})
+
+    messages.success(request, message)
     return redirect("cart_detail")
 
 
@@ -44,6 +57,7 @@ def cart_update(request, product_id):
     except ValueError:
         return redirect("cart_detail")
     Cart(request).set_quantity(product_id, quantity)
+    messages.success(request, "Your cart has been updated.")
     return redirect("cart_detail")
 
 
@@ -90,6 +104,7 @@ def checkout(request):
                     for item in items
                 ])
             cart.clear()
+            messages.success(request, f"Order #{order.pk} placed successfully!")
             return redirect("order_success", pk=order.pk)
     else:
         form = CheckoutForm(initial={

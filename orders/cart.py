@@ -38,6 +38,10 @@ class Cart:
         self.cart = {}
         self._save()
 
+    def count(self):
+        """Total number of units in the cart (shown in the navbar badge)."""
+        return sum(self.cart.values())
+
     def items_and_total(self):
         """Return (list of items, total price). One database query."""
         products = Product.objects.filter(pk__in=self.cart.keys()).select_related("category")

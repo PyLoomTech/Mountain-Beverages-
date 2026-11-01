@@ -17,6 +17,7 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            request.skip_login_toast = True  # we show our own welcome message below
             login(request, user)
             messages.success(request, f"Welcome, {user.first_name}! Your account has been created.")
             # Only follow 'next' if it points to our own site

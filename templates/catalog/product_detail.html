@@ -45,7 +45,7 @@
       {% endif %}
 
       {% if product.is_available %}
-        <form method="post" action="{% url 'cart_add' product.id %}" class="row g-2 align-items-center mt-3">
+        <form method="post" action="{% url 'cart_add' product.id %}" class="js-add-to-cart row g-2 align-items-center mt-3">
           {% csrf_token %}
           <div class="col-auto">
             <label for="qty" class="visually-hidden">Quantity</label>
