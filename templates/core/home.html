@@ -13,19 +13,46 @@
   </div>
 </section>
 
-<!-- Company introduction -->
+<!-- Company highlights -->
+{% if highlights %}
 <section class="container py-5">
-  <div class="row justify-content-center text-center">
-    <div class="col-lg-8">
-      <h2 class="section-title">Who We Are</h2>
-      <p class="text-muted">{{ site.about_text|truncatewords:60|default:"Company introduction will appear here." }}</p>
-      <a href="{% url 'about' %}" class="btn btn-outline-primary">Learn more</a>
+  <h2 class="section-title text-center mb-4">Company Highlights</h2>
+  <div class="row g-4 justify-content-center">
+    {% for highlight in highlights %}
+      <div class="col-6 col-lg-3">
+        <div class="card h-100 text-center shadow-sm border-0">
+          <div class="card-body py-4">
+            <i class="bi {{ highlight.icon }} text-primary" style="font-size:2.5rem;"></i>
+            {% if highlight.value %}
+              <div class="fs-2 fw-bold mt-2" style="color:var(--brand-navy);">{{ highlight.value }}</div>
+            {% endif %}
+            <h5 class="mt-2">{{ highlight.title }}</h5>
+            {% if highlight.description %}
+              <p class="small text-muted mb-0">{{ highlight.description }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Company introduction -->
+<section class="bg-light py-5">
+  <div class="container">
+    <div class="row justify-content-center text-center">
+      <div class="col-lg-8">
+        <h2 class="section-title">Who We Are</h2>
+        <p class="text-muted">{{ site.about_text|truncatewords:60|default:"Company introduction will appear here." }}</p>
+        <a href="{% url 'about' %}" class="btn btn-outline-primary">Learn more</a>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- Featured products -->
-<section class="bg-light py-5">
+<section class="py-5">
   <div class="container">
     <h2 class="section-title text-center mb-4">Featured Products</h2>
     <div class="row g-4">
@@ -44,21 +71,23 @@
 </section>
 
 <!-- Featured projects -->
-<section class="container py-5">
-  <h2 class="section-title text-center mb-4">Our Projects</h2>
-  <div class="row g-4">
-    {% for project in featured_projects %}
-      <div class="col-md-4">
-        {% include "projects/_project_card.html" %}
-      </div>
-    {% empty %}
-      <p class="text-center text-muted">No projects yet.</p>
-    {% endfor %}
+<section class="bg-light py-5">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">Our Projects</h2>
+    <div class="row g-4">
+      {% for project in featured_projects %}
+        <div class="col-md-4">
+          {% include "projects/_project_card.html" %}
+        </div>
+      {% empty %}
+        <p class="text-center text-muted">No projects yet.</p>
+      {% endfor %}
+    </div>
   </div>
 </section>
 
 <!-- Customer reviews -->
-<section class="bg-light py-5">
+<section class="py-5">
   <div class="container">
     <h2 class="section-title text-center mb-4">What Customers Say</h2>
     <div class="row g-4">
@@ -85,5 +114,8 @@
     <a href="{% url 'product_list' %}" class="btn btn-light btn-lg">Start Ordering</a>
   </div>
 </section>
+
+<!-- Announcement pop-up (shown by static/js/site.js) -->
+{% include "core/_announcement_modal.html" %}
 
 {% endblock %}

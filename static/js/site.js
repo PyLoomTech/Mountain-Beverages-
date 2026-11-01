@@ -1,4 +1,4 @@
-/* Toast pop-ups */
+/* Toast pop-ups, cart badge, AJAX add-to-cart and the home announcement */
 
 const TOAST_ICONS = {
   success: "bi-check-circle-fill",
@@ -102,5 +102,44 @@ function setupAddToCart() {
   });
 }
 
+/**
+ * Home page announcement pop-up.
+ * - Shown once per browser session.
+ * - "Don't show this again" hides it for good (until the admin edits it).
+ * The data-key changes whenever the admin edits the announcement, so an
+ * edited announcement is treated as new.
+ */
+function setupAnnouncement() {
+  const modalEl = document.getElementById("announcementModal");
+  if (!modalEl) return;
+
+  const key = modalEl.dataset.key;
+  const hideKey = `announcement-hide-${key}`;
+  const seenKey = `announcement-seen-${key}`;
+
+  try {
+    if (localStorage.getItem(hideKey) || sessionStorage.getItem(seenKey)) return;
+  } catch (error) {
+    // Storage blocked by the browser: just show the pop-up
+  }
+
+  const modal = new bootstrap.Modal(modalEl);
+
+  // Mark as seen as soon as it opens, so clicking its button doesn't bring it back
+  modalEl.addEventListener("show.bs.modal", () => {
+    try { sessionStorage.setItem(seenKey, "1"); } catch (error) { /* ignore */ }
+  });
+
+  modalEl.addEventListener("hidden.bs.modal", () => {
+    const dontShow = modalEl.querySelector("#announcementDontShow");
+    if (dontShow && dontShow.checked) {
+      try { localStorage.setItem(hideKey, "1"); } catch (error) { /* ignore */ }
+    }
+  });
+
+  setTimeout(() => modal.show(), 1200); // short delay so the page loads first
+}
+
 showServerMessages();
 setupAddToCart();
+setupAnnouncement();

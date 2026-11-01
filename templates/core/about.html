@@ -50,4 +50,51 @@
     </div>
   </div>
 </div>
+
+<!-- Team members -->
+{% if team %}
+<section class="bg-light py-5">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">Our Team</h2>
+    <div class="row g-4 justify-content-center">
+      {% for member in team %}
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card h-100 text-center shadow-sm border-0">
+            <div class="card-body">
+              {% if member.photo %}
+                <img src="{{ member.photo.url }}" alt="{{ member.name }}"
+                     class="rounded-circle mb-3 shadow-sm"
+                     style="width:130px;height:130px;object-fit:cover;">
+              {% else %}
+                <div class="rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center placeholder-img"
+                     style="width:130px;height:130px;">
+                  <i class="bi bi-person-fill" style="font-size:3.5rem;"></i>
+                </div>
+              {% endif %}
+
+              <h5 class="mb-0">{{ member.name }}</h5>
+              <p class="text-primary small mb-2">{{ member.position }}</p>
+
+              {% if member.bio %}
+                <p class="small text-muted">{{ member.bio|truncatewords:25 }}</p>
+              {% endif %}
+
+              {% if member.facebook_url or member.linkedin_url %}
+                <div class="fs-5">
+                  {% if member.facebook_url %}
+                    <a href="{{ member.facebook_url }}" target="_blank" rel="noopener" class="text-secondary me-2" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                  {% endif %}
+                  {% if member.linkedin_url %}
+                    <a href="{{ member.linkedin_url }}" target="_blank" rel="noopener" class="text-secondary" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 {% endblock %}

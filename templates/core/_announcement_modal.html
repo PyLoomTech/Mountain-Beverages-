@@ -1,0 +1,39 @@
+{% if announcement %}
+<div class="modal fade" id="announcementModal" tabindex="-1"
+     aria-labelledby="announcementTitle" aria-hidden="true"
+     data-key="{{ announcement.pk }}-{{ announcement.updated_at|date:'U' }}">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content overflow-hidden">
+
+      {% if announcement.image %}
+        <img src="{{ announcement.image.url }}" class="w-100" style="max-height:260px;object-fit:cover;" alt="">
+      {% endif %}
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="announcementTitle">
+          <i class="bi bi-megaphone-fill text-primary"></i> {{ announcement.title }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-0">{{ announcement.message|linebreaksbr }}</p>
+      </div>
+
+      <div class="modal-footer justify-content-between">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="announcementDontShow">
+          <label class="form-check-label small text-muted" for="announcementDontShow">Don't show this again</label>
+        </div>
+        <div>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          {% if announcement.button_url and announcement.button_text %}
+            <a href="{{ announcement.button_url }}" class="btn btn-primary">{{ announcement.button_text }}</a>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endif %}

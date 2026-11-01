@@ -6,6 +6,7 @@ from projects.models import Project
 from reviews.models import Review
 
 from .forms import ContactForm
+from .models import Announcement, Highlight, TeamMember
 
 
 def home(request):
@@ -21,11 +22,15 @@ def home(request):
         "featured_products": featured_products,
         "featured_projects": featured_projects,
         "reviews": reviews,
+        "highlights": Highlight.objects.filter(is_active=True),
+        "announcement": Announcement.current(),
     })
 
 
 def about(request):
-    return render(request, "core/about.html")
+    return render(request, "core/about.html", {
+        "team": TeamMember.objects.filter(is_active=True),
+    })
 
 
 def contact(request):
