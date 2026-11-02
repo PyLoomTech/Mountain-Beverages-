@@ -1,0 +1,75 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{% if instance %}Edit{% else %}Add{% endif %} {{ section.singular|lower }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'dashboard:list' section.key %}">{{ section.label }}</a></li>
+    <li class="breadcrumb-item active">{% if instance %}Edit{% else %}Add{% endif %}</li>
+  </ol>
+</nav>
+
+<h1 class="h3 mb-3">{% if instance %}Edit {{ section.singular|lower }}{% else %}Add {{ section.singular|lower }}{% endif %}</h1>
+
+<div class="row g-4">
+  <div class="col-12 col-xl-8">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endfor %}
+
+          {% for field in form %}
+            {% include "dashboard/_field.html" %}
+          {% endfor %}
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+            <a href="{% url 'dashboard:list' section.key %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% if section.has_gallery %}
+    <div class="col-12 col-xl-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+          <h2 class="h5"><i class="bi bi-images text-primary"></i> Gallery photos</h2>
+
+          {% if instance %}
+            <form method="post" action="{% url 'dashboard:gallery_add' instance.pk %}" enctype="multipart/form-data" class="mb-3">
+              {% csrf_token %}
+              <input type="file" name="images" accept="image/*" multiple class="form-control mb-2" required>
+              <div class="form-text mb-2">You can choose several photos. Maximum {{ max_image_mb }} MB each.</div>
+              <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-upload"></i> Upload</button>
+            </form>
+
+            <div class="row g-2">
+              {% for image in gallery %}
+                <div class="col-6">
+                  <img src="{{ image.image.url }}" alt="" class="gallery-thumb mb-1">
+                  <form method="post" action="{% url 'dashboard:gallery_delete' instance.pk image.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger w-100"><i class="bi bi-trash"></i> Remove</button>
+                  </form>
+                </div>
+              {% empty %}
+                <p class="text-muted small mb-0">No gallery photos yet.</p>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted small mb-0">Save the project first, then you can add gallery photos here.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

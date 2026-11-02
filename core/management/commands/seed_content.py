@@ -3,9 +3,9 @@ from django.db import transaction
 
 from core.models import Announcement, Highlight, TeamMember
 
-# ---------------------------------------------------------------------------
+
 # SAMPLE CONTENT: replace with the client's real information from the admin.
-# ---------------------------------------------------------------------------
+
 
 HIGHLIGHTS = [
     # icon, value, title, description

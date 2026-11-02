@@ -1,0 +1,24 @@
+{# Renders one form field. Used by the add/edit form and by the site content tabs. #}
+<div class="mb-3">
+  {% if field.field.widget.input_type == "checkbox" %}
+    <div class="form-check form-switch">
+      {{ field }}
+      <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    </div>
+  {% else %}
+    <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
+      {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+    </label>
+
+    {% if field.field.widget.input_type == "file" and field.value %}
+      {% if field.value.url %}
+        <div><img src="{{ field.value.url }}" alt="" class="form-preview"></div>
+      {% endif %}
+    {% endif %}
+
+    {{ field }}
+  {% endif %}
+
+  {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+  {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+</div>

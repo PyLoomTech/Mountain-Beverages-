@@ -1,5 +1,6 @@
 from django.db import models
-from django.utils.text import slugify
+
+from core.utils import unique_slug
 
 
 class Category(models.Model):
@@ -12,7 +13,7 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = unique_slug(self, self.name)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -44,7 +45,7 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = unique_slug(self, self.name)
         super().save(*args, **kwargs)
 
     @property

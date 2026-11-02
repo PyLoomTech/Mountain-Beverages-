@@ -1,0 +1,24 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Delete {{ section.singular|lower }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h1 class="h4"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Delete {{ section.singular|lower }}?</h1>
+        <p>You are about to delete <strong>“{{ obj }}”</strong>. This cannot be undone.</p>
+        {% if section.toggle_field %}
+          <p class="text-muted small">If you only want to take it off the website for now, use <strong>Show/Hide</strong> in the list instead.</p>
+        {% endif %}
+        <form method="post" class="d-flex gap-2">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Yes, delete</button>
+          <a href="{% url 'dashboard:list' section.key %}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

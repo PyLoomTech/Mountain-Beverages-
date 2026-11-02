@@ -1,0 +1,54 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Site content{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-1"><i class="bi bi-pencil-square text-primary"></i> Site content</h1>
+<p class="text-muted">Company text, banner, contact details and social links shown across the website.</p>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+
+  {% for error in form.non_field_errors %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endfor %}
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white">
+      <ul class="nav nav-tabs card-header-tabs" role="tablist">
+        {% for tab in tabs %}
+          <li class="nav-item" role="presentation">
+            <button class="nav-link {% if tab.id == active_tab %}active{% endif %}" id="{{ tab.id }}-btn"
+                    data-bs-toggle="tab" data-bs-target="#{{ tab.id }}" type="button" role="tab"
+                    aria-controls="{{ tab.id }}" aria-selected="{% if tab.id == active_tab %}true{% else %}false{% endif %}">
+              <i class="bi {{ tab.icon }}"></i> {{ tab.title }}
+              {% if tab.has_errors %}<span class="badge bg-danger">!</span>{% endif %}
+            </button>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card-body p-4">
+      <div class="tab-content">
+        {% for tab in tabs %}
+          <div class="tab-pane fade {% if tab.id == active_tab %}show active{% endif %}" id="{{ tab.id }}" role="tabpanel" aria-labelledby="{{ tab.id }}-btn" tabindex="0">
+            <div class="row">
+              <div class="col-12 col-xl-9">
+                {% for field in tab.fields %}
+                  {% include "dashboard/_field.html" %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card-footer bg-white">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save changes</button>
+      <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
