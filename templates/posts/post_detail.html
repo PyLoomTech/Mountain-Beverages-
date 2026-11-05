@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} | {{ site.company_name }}{% endblock %}
+{% block meta_description %}{{ post.excerpt }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'post_list' %}">News</a></li>
+      <li class="breadcrumb-item active">{{ post.title|truncatechars:50 }}</li>
+    </ol>
+  </nav>
+
+  <div class="row justify-content-center">
+    <article class="col-lg-8">
+      <h1>{{ post.title }}</h1>
+      <p class="text-muted"><i class="bi bi-calendar"></i> {{ post.published_at|date:"d F Y" }}</p>
+
+      {% if post.cover_image %}
+        <img src="{{ post.cover_image.url }}" class="img-fluid rounded shadow-sm mb-4" alt="{{ post.title }}">
+      {% endif %}
+
+      {% if post.summary %}<p class="lead">{{ post.summary }}</p>{% endif %}
+
+      {# The HTML was cleaned when the post was saved (see clean_html in core/utils.py) #}
+      <div class="post-content">{{ post.content|safe }}</div>
+
+      <hr class="my-4">
+      <a href="{% url 'post_list' %}" class="btn btn-outline-primary"><i class="bi bi-arrow-left"></i> All news</a>
+    </article>
+  </div>
+
+  {% if latest %}
+    <h3 class="section-title mt-5 mb-4">More news</h3>
+    <div class="row g-4">
+      {% for post in latest %}
+        <div class="col-md-4">
+          {% include "posts/_post_card.html" %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -104,30 +104,47 @@ function setupAddToCart() {
 
 /**
  * Home page announcement pop-up.
- * - Shown once per browser session.
- * - "Don't show this again" hides it for good (until the admin edits it).
- * The data-key changes whenever the admin edits the announcement, so an
- * edited announcement is treated as new.
+ *
+ * How often it shows is chosen by the staff for each announcement:
+ *   session - once per browser tab/visit (default)
+ *   daily   - at most once every 24 hours
+ *   always  - every time the home page loads
+ *
+ * "Don't show this again" hides it for good. The data-key changes whenever the
+ * announcement is edited, so an edited announcement counts as new.
  */
 function setupAnnouncement() {
   const modalEl = document.getElementById("announcementModal");
   if (!modalEl) return;
 
   const key = modalEl.dataset.key;
+  const frequency = modalEl.dataset.frequency || "session";
   const hideKey = `announcement-hide-${key}`;
   const seenKey = `announcement-seen-${key}`;
+  const lastKey = `announcement-last-${key}`;
+  const ONE_DAY = 24 * 60 * 60 * 1000;
 
   try {
-    if (localStorage.getItem(hideKey) || sessionStorage.getItem(seenKey)) return;
+    if (localStorage.getItem(hideKey)) return; // visitor chose "Don't show again"
+
+    if (frequency === "session" && sessionStorage.getItem(seenKey)) return;
+
+    if (frequency === "daily") {
+      const last = Number(localStorage.getItem(lastKey));
+      if (last && Date.now() - last < ONE_DAY) return;
+    }
   } catch (error) {
     // Storage blocked by the browser: just show the pop-up
   }
 
   const modal = new bootstrap.Modal(modalEl);
 
-  // Mark as seen as soon as it opens, so clicking its button doesn't bring it back
+  // Remember that it was shown as soon as it opens, so clicking its button doesn't bring it back
   modalEl.addEventListener("show.bs.modal", () => {
-    try { sessionStorage.setItem(seenKey, "1"); } catch (error) { /* ignore */ }
+    try {
+      sessionStorage.setItem(seenKey, "1");
+      localStorage.setItem(lastKey, String(Date.now()));
+    } catch (error) { /* ignore */ }
   });
 
   modalEl.addEventListener("hidden.bs.modal", () => {

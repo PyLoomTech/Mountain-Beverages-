@@ -177,12 +177,16 @@ def section_list(request, key):
 def section_form(request, key, pk=None):
     section = get_section(key)
     instance = get_object_or_404(section.model, pk=pk) if pk else None
-    Form = build_form_class(section.model, section.fields)
+    Form = build_form_class(section.model, section.fields, section.rich_fields)
 
     if request.method == "POST":
         form = Form(request.POST, request.FILES, instance=instance)
         if form.is_valid():
-            obj = form.save()
+            obj = form.save(commit=False)
+            if section.author_field and getattr(obj, f"{section.author_field}_id") is None:
+                setattr(obj, section.author_field, request.user)  # remember who wrote it
+            obj.save()
+            form.save_m2m()
             if section.has_gallery and instance is None:
                 # Stay on the page so the gallery photos can be added next
                 messages.success(request, f"{section.singular} “{obj}” saved. You can now add gallery photos.")

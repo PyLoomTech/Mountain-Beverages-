@@ -1,7 +1,8 @@
 {% if announcement %}
 <div class="modal fade" id="announcementModal" tabindex="-1"
      aria-labelledby="announcementTitle" aria-hidden="true"
-     data-key="{{ announcement.pk }}-{{ announcement.updated_at|date:'U' }}">
+     data-key="{{ announcement.pk }}-{{ announcement.updated_at|date:'U' }}"
+     data-frequency="{{ announcement.show_frequency }}">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content overflow-hidden">
 

@@ -102,6 +102,7 @@ class DashboardTests(TestCase):
     def test_announcement_datetime_and_validation(self):
         url = reverse("dashboard:new", args=["announcements"])
         ok = self.client.post(url, {"title": "Dashain offer", "message": "10% off",
+                                    "show_frequency": "session",
                                     "start_at": "2026-11-05T09:30", "is_active": "on"})
         self.assertEqual(ok.status_code, 302)
         ann = Announcement.objects.get()

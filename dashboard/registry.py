@@ -3,12 +3,13 @@ The dashboard is driven by this list.
 
 Each Section describes one kind of content: which model it edits, which fields
 appear in the form, and which columns appear in the list. To manage a new kind
-of content later (posts, for example), add one Section here.
+of content later, add one Section here.
 """
 from dataclasses import dataclass
 
 from catalog.models import Category, Product
 from core.models import Announcement, Highlight, TeamMember
+from posts.models import Post
 from projects.models import Project
 
 
@@ -33,6 +34,8 @@ class Section:
     toggle_field: str = ""   # yes/no field flipped by the Show/Hide button
     has_gallery: bool = False
     help_text: str = ""
+    rich_fields: tuple = ()  # fields edited with the rich-text editor
+    author_field: str = ""   # field filled with the logged-in user when created
 
 
 _SECTIONS = (
@@ -40,10 +43,11 @@ _SECTIONS = (
         key="announcements", group="Home page", label="Announcements", singular="Announcement",
         icon="bi-megaphone", model=Announcement,
         fields=("title", "message", "image", "button_text", "button_url",
-                "start_at", "end_at", "is_active"),
+                "show_frequency", "start_at", "end_at", "is_active"),
         columns=(
             Column("Title", "title"),
             Column("Live now", "is_live", "bool"),
+            Column("Shows", "get_show_frequency_display"),
             Column("Starts", "start_at", "datetime"),
             Column("Ends", "end_at", "datetime"),
         ),
@@ -78,6 +82,20 @@ _SECTIONS = (
         ),
         search_fields=("name", "position"), toggle_field="is_active",
         help_text="People shown in the Our Team section of the About page.",
+    ),
+    Section(
+        key="posts", group="News", label="Posts", singular="Post",
+        icon="bi-newspaper", model=Post,
+        fields=("title", "summary", "cover_image", "content", "published_at", "is_published"),
+        columns=(
+            Column("Cover", "cover_image", "image"),
+            Column("Title", "title"),
+            Column("Date", "published_at", "datetime"),
+            Column("Published", "is_published", "bool"),
+        ),
+        search_fields=("title", "summary"), toggle_field="is_published",
+        rich_fields=("content",), author_field="author",
+        help_text="News and updates shown on the News page and the home page.",
     ),
     Section(
         key="categories", group="Catalog", label="Categories", singular="Category",

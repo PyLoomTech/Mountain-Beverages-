@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.html import format_html
 
 MAX_IMAGE_MB = 5
 
@@ -20,6 +21,23 @@ def _formfield(db_field, **kwargs):
     elif isinstance(db_field, models.DateField):
         kwargs["widget"] = forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")
     return db_field.formfield(**kwargs)
+
+
+class TrixWidget(forms.Widget):
+    """Rich-text editor (bold, headings, lists, links, quotes) built on Trix.
+
+    It renders a hidden input, which Django reads, plus the editor box that fills it.
+    The Trix files are loaded in templates/dashboard/base.html.
+    """
+
+    def render(self, name, value, attrs=None, renderer=None):
+        attrs = self.build_attrs(self.attrs, attrs)
+        field_id = attrs.get("id") or f"id_{name}"
+        return format_html(
+            '<input type="hidden" name="{}" id="{}" value="{}">'
+            '<trix-editor input="{}" class="form-control trix-box"></trix-editor>',
+            name, field_id, "" if value is None else value, field_id,
+        )
 
 
 class StyledModelForm(forms.ModelForm):
@@ -47,8 +65,13 @@ class StyledModelForm(forms.ModelForm):
                 widget.attrs["accept"] = "image/*"
 
 
-def build_form_class(model, fields):
-    """Create a form for the given model and field names."""
+def build_form_class(model, fields, rich_fields=()):
+    """Create a form for the given model and field names.
+
+    Fields listed in rich_fields use the rich-text editor instead of a plain box.
+    """
+    widgets = {name: TrixWidget() for name in rich_fields}
     return forms.modelform_factory(
-        model, form=StyledModelForm, fields=list(fields), formfield_callback=_formfield
+        model, form=StyledModelForm, fields=list(fields),
+        widgets=widgets, formfield_callback=_formfield,
     )

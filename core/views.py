@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render
 
 from catalog.models import Product
+from posts.models import Post
 from projects.models import Project
 from reviews.models import Review
 
@@ -21,6 +22,7 @@ def home(request):
     return render(request, "core/home.html", {
         "featured_products": featured_products,
         "featured_projects": featured_projects,
+        "latest_posts": Post.objects.live()[:3],
         "reviews": reviews,
         "highlights": Highlight.objects.filter(is_active=True),
         "announcement": Announcement.current(),

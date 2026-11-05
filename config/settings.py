@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "reviews",
     "core",
     "dashboard",
+    "posts",
 ]
 
 MIDDLEWARE = [

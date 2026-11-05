@@ -86,6 +86,12 @@ def validate_link(value):
 class Announcement(models.Model):
     """A pop-up shown on the home page while it is live."""
 
+    FREQUENCY_CHOICES = [
+        ("session", "Once per visit"),
+        ("daily", "Once per day"),
+        ("always", "Every time the home page loads"),
+    ]
+
     title = models.CharField(max_length=120)
     message = models.TextField()
     image = models.ImageField(upload_to="announcements/", blank=True)
@@ -93,6 +99,10 @@ class Announcement(models.Model):
     button_url = models.CharField(
         max_length=300, blank=True, validators=[validate_link],
         help_text="Page or link the button opens, e.g. /products/ or https://example.com",
+    )
+    show_frequency = models.CharField(
+        max_length=10, choices=FREQUENCY_CHOICES, default="session",
+        help_text="How often the same visitor sees this pop-up.",
     )
     is_active = models.BooleanField(default=True, help_text="Turn off to hide it at any time.")
     start_at = models.DateTimeField(default=timezone.now, help_text="The pop-up appears from this time.")
@@ -130,8 +140,9 @@ class Announcement(models.Model):
         return self.title
 
 
-
+# ---------------------------------------------------------------------------
 # Company highlights (home page)
+# ---------------------------------------------------------------------------
 
 class Highlight(models.Model):
     icon = models.CharField(
@@ -154,9 +165,9 @@ class Highlight(models.Model):
         return self.title
 
 
-
+# ---------------------------------------------------------------------------
 # Team members (About page)
-
+# ---------------------------------------------------------------------------
 
 class TeamMember(models.Model):
     name = models.CharField(max_length=120)

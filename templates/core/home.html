@@ -86,8 +86,27 @@
   </div>
 </section>
 
-<!-- Customer reviews -->
+<!-- Latest news -->
+{% if latest_posts %}
 <section class="py-5">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">Latest News</h2>
+    <div class="row g-4">
+      {% for post in latest_posts %}
+        <div class="col-md-4">
+          {% include "posts/_post_card.html" %}
+        </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+      <a href="{% url 'post_list' %}" class="btn btn-outline-primary">All news</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Customer reviews -->
+<section class="bg-light py-5">
   <div class="container">
     <h2 class="section-title text-center mb-4">What Customers Say</h2>
     <div class="row g-4">
