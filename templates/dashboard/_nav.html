@@ -3,6 +3,23 @@
     <i class="bi bi-grid"></i> Overview
   </a>
 
+  <div class="heading">Customers and orders</div>
+  <a href="{% url 'dashboard:orders' %}" class="{% if active == 'orders' %}active{% endif %}">
+    <i class="bi bi-receipt"></i> Orders
+    {% if badges.orders %}<span class="badge bg-warning text-dark float-end">{{ badges.orders }}</span>{% endif %}
+  </a>
+  <a href="{% url 'dashboard:reviews' %}" class="{% if active == 'reviews' %}active{% endif %}">
+    <i class="bi bi-star-half"></i> Reviews
+    {% if badges.reviews %}<span class="badge bg-warning text-dark float-end">{{ badges.reviews }}</span>{% endif %}
+  </a>
+  <a href="{% url 'dashboard:inbox' %}" class="{% if active == 'inbox' %}active{% endif %}">
+    <i class="bi bi-envelope"></i> Messages
+    {% if badges.inbox %}<span class="badge bg-warning text-dark float-end">{{ badges.inbox }}</span>{% endif %}
+  </a>
+  <a href="{% url 'dashboard:customers' %}" class="{% if active == 'customers' %}active{% endif %}">
+    <i class="bi bi-person-lines-fill"></i> Customers
+  </a>
+
   <div class="heading">Website text</div>
   <a href="{% url 'dashboard:site' %}" class="{% if active == 'site' %}active{% endif %}">
     <i class="bi bi-pencil-square"></i> Site content

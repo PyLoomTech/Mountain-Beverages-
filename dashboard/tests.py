@@ -1,5 +1,4 @@
 import io
-import os
 import shutil
 import tempfile
 from datetime import date
@@ -15,6 +14,8 @@ from catalog.models import Category, Product
 from core.models import Announcement, Highlight, SiteSettings, TeamMember
 from orders.models import Order, OrderItem
 from projects.models import Project, ProjectImage
+
+from .testing import en
 
 User = get_user_model()
 TEMP_MEDIA = tempfile.mkdtemp()
@@ -73,8 +74,8 @@ class DashboardTests(TestCase):
     # ---------- create / edit ----------
 
     def test_create_product_and_unique_slug(self):
-        data = {"category": self.category.pk, "name": "Mango Drink", "price": "30.00",
-                "unit": "bottle", "is_available": "on"}
+        data = en(Product, {"category": self.category.pk, "name": "Mango Drink", "price": "30.00",
+                            "unit": "bottle", "is_available": "on"})
         r1 = self.client.post(reverse("dashboard:new", args=["products"]), data)
         r2 = self.client.post(reverse("dashboard:new", args=["products"]), data)  # same name again
         self.assertEqual(r1.status_code, 302)
@@ -85,8 +86,8 @@ class DashboardTests(TestCase):
     def test_edit_product_keeps_slug(self):
         product = Product.objects.create(category=self.category, name="Water 1L", price=25)
         old_slug = product.slug
-        self.client.post(reverse("dashboard:edit", args=["products", product.pk]), {
-            "category": self.category.pk, "name": "Water 1 Litre", "price": "26.00", "unit": "bottle"})
+        self.client.post(reverse("dashboard:edit", args=["products", product.pk]), en(Product, {
+            "category": self.category.pk, "name": "Water 1 Litre", "price": "26.00", "unit": "bottle"}))
         product.refresh_from_db()
         self.assertEqual(product.name, "Water 1 Litre")
         self.assertEqual(product.slug, old_slug)
@@ -94,28 +95,28 @@ class DashboardTests(TestCase):
 
     def test_product_requires_price(self):
         response = self.client.post(reverse("dashboard:new", args=["products"]),
-                                    {"category": self.category.pk, "name": "No price"})
+                                    en(Product, {"category": self.category.pk, "name": "No price"}))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "This field is required")
         self.assertEqual(Product.objects.count(), 0)
 
     def test_announcement_datetime_and_validation(self):
         url = reverse("dashboard:new", args=["announcements"])
-        ok = self.client.post(url, {"title": "Dashain offer", "message": "10% off",
+        ok = self.client.post(url, en(Announcement, {"title": "Dashain offer", "message": "10% off",
                                     "show_frequency": "session",
-                                    "start_at": "2026-11-05T09:30", "is_active": "on"})
+                                    "start_at": "2026-11-05T09:30", "is_active": "on"}))
         self.assertEqual(ok.status_code, 302)
         ann = Announcement.objects.get()
-        # Typed as Kathmandu time: 09:30 NPT is stored as 03:45 UTC
+        # stored as Kathmandu local time: 09:30 NPT == 03:45 UTC
         self.assertEqual(ann.start_at.strftime("%H:%M"), "03:45")
 
-        bad_link = self.client.post(url, {"title": "x", "message": "y", "button_text": "Go",
+        bad_link = self.client.post(url, en(Announcement, {"title": "x", "message": "y", "button_text": "Go",
                                           "button_url": "javascript:alert(1)",
-                                          "start_at": "2026-11-05T09:30"})
+                                          "start_at": "2026-11-05T09:30"}))
         self.assertContains(bad_link, "must start with")
 
-        bad_dates = self.client.post(url, {"title": "x", "message": "y",
-                                           "start_at": "2026-11-05T09:30", "end_at": "2026-11-04T09:30"})
+        bad_dates = self.client.post(url, en(Announcement, {"title": "x", "message": "y",
+                                           "start_at": "2026-11-05T09:30", "end_at": "2026-11-04T09:30"}))
         self.assertContains(bad_dates, "end time must be after")
         self.assertEqual(Announcement.objects.count(), 1)
 
@@ -127,15 +128,15 @@ class DashboardTests(TestCase):
 
     def test_highlight_icon_validation(self):
         url = reverse("dashboard:new", args=["highlights"])
-        bad = self.client.post(url, {"icon": "star", "title": "T", "order": 1})
+        bad = self.client.post(url, en(Highlight, {"icon": "star", "title": "T", "order": 1}))
         self.assertContains(bad, "Bootstrap icon name")
-        good = self.client.post(url, {"icon": "bi-star", "title": "T", "order": 1, "is_active": "on"})
+        good = self.client.post(url, en(Highlight, {"icon": "bi-star", "title": "T", "order": 1, "is_active": "on"}))
         self.assertEqual(good.status_code, 302)
 
     def test_team_member_with_photo(self):
         response = self.client.post(reverse("dashboard:new", args=["team"]),
-                                    {"name": "Sita", "position": "Manager", "order": 1,
-                                     "photo": png("sita.png"), "is_active": "on"})
+                                    en(TeamMember, {"name": "Sita", "position": "Manager", "order": 1,
+                                     "photo": png("sita.png"), "is_active": "on"}))
         self.assertEqual(response.status_code, 302)
         member = TeamMember.objects.get()
         self.assertTrue(member.photo.name.startswith("team/"))
@@ -147,14 +148,14 @@ class DashboardTests(TestCase):
     def test_non_image_upload_rejected(self):
         fake = SimpleUploadedFile("evil.png", b"not an image", content_type="image/png")
         response = self.client.post(reverse("dashboard:new", args=["team"]),
-                                    {"name": "X", "position": "Y", "order": 1, "photo": fake})
+                                    en(TeamMember, {"name": "X", "position": "Y", "order": 1, "photo": fake}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(TeamMember.objects.count(), 0)
 
     def test_image_size_limit(self):
         with mock.patch("dashboard.forms.MAX_IMAGE_MB", 0.00001):
             response = self.client.post(reverse("dashboard:new", args=["team"]),
-                                        {"name": "X", "position": "Y", "order": 1, "photo": png()})
+                                        en(TeamMember, {"name": "X", "position": "Y", "order": 1, "photo": png()}))
         self.assertContains(response, "too large")
         self.assertEqual(TeamMember.objects.count(), 0)
 
@@ -209,31 +210,32 @@ class DashboardTests(TestCase):
 
     def test_site_content_save_and_error_tab(self):
         url = reverse("dashboard:site")
-        ok = self.client.post(url, {"company_name": "Mountain Beverage Group", "tagline": "Save Water",
-                                    "about_text": "About us", "email": "info@example.com"})
+        ok = self.client.post(url, en(SiteSettings, {"company_name": "Mountain Beverage Group", "tagline": "Save Water",
+                                    "about_text": "About us", "email": "info@example.com"}))
         self.assertEqual(ok.status_code, 302)
         site = SiteSettings.load()
         self.assertEqual(site.tagline, "Save Water")
         self.assertEqual(site.about_text, "About us")
 
-        bad = self.client.post(url, {"company_name": "X", "email": "not-an-email"})
+        bad = self.client.post(url, en(SiteSettings, {"company_name": "X", "email": "not-an-email"}))
         self.assertEqual(bad.status_code, 200)
         self.assertContains(bad, "Enter a valid email")
-        self.assertEqual(bad.context["active_tab"], "tab2")  # the Contact tab opens
+        tabs_with_errors = [tab["id"] for tab in bad.context["tabs"] if tab["has_errors"]]
+        self.assertEqual(tabs_with_errors, ["tab-general"])  # the tab holding the bad email opens
         self.assertEqual(SiteSettings.objects.count(), 1)
 
     # ---------- projects and gallery ----------
 
     def test_project_gallery_flow(self):
-        response = self.client.post(reverse("dashboard:new", args=["projects"]), {
-            "title": "Event", "description": "D", "date": "2026-05-12", "is_published": "on"})
+        response = self.client.post(reverse("dashboard:new", args=["projects"]), en(Project, {
+            "title": "Event", "description": "D", "date": "2026-05-12", "is_published": "on"}))
         project = Project.objects.get()
         self.assertEqual(project.date, date(2026, 5, 12))
         self.assertRedirects(response, reverse("dashboard:edit", args=["projects", project.pk]))
 
         add_url = reverse("dashboard:gallery_add", args=[project.pk])
         bad = SimpleUploadedFile("a.png", b"nope", content_type="image/png")
-        self.client.post(add_url, {"images": [png("one.png"), png("two.png"), bad]})
+        self.client.post(add_url, en(Project, {"images": [png("one.png"), png("two.png"), bad]}))
         self.assertEqual(project.images.count(), 2)
 
         edit = self.client.get(reverse("dashboard:edit", args=["projects", project.pk]))
@@ -243,6 +245,7 @@ class DashboardTests(TestCase):
         stored_path = image.image.path
         self.client.post(reverse("dashboard:gallery_delete", args=[project.pk, image.pk]))
         self.assertEqual(project.images.count(), 1)
+        import os
         self.assertFalse(os.path.exists(stored_path))
 
     def test_gallery_add_without_files(self):

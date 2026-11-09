@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Customers{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-1"><i class="bi bi-person-lines-fill text-primary"></i> Customers</h1>
+<p class="text-muted">People who registered on the website. Staff accounts are managed in the Django admin.</p>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-12 col-md-5 col-lg-4">
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Search name, username, email or phone...">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-primary" type="submit">Search</button>
+    {% if q %}<a href="{% url 'dashboard:customers' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+  </div>
+</form>
+
+<div class="card shadow-sm border-0">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Customer</th><th>Contact</th><th>Joined</th><th>Orders</th><th>Account</th><th class="text-end">Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for customer in page_obj %}
+          <tr>
+            <td><strong>{{ customer }}</strong><br><small class="text-muted">@{{ customer.username }}</small></td>
+            <td>{{ customer.phone|default:"—" }}<br><small class="text-muted">{{ customer.email|default:"" }}</small></td>
+            <td class="text-nowrap">{{ customer.date_joined|date:"d M Y" }}</td>
+            <td>{{ customer.order_count }}</td>
+            <td>{% if customer.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Blocked</span>{% endif %}</td>
+            <td class="text-end"><a href="{% url 'dashboard:customer_detail' customer.pk %}" class="btn btn-sm btn-outline-primary">View</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-5">No customers found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% include "dashboard/_pager.html" %}
+{% endblock %}

@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from core.models import Announcement
+from dashboard.testing import en
 from posts.models import Post
 
 User = get_user_model()
@@ -104,7 +105,7 @@ class PublicPostTests(TestCase):
         scheduled = make_post("Soon", live=False)
         self.assertEqual(self.client.get(reverse("post_detail", args=[draft.slug])).status_code, 404)
         self.assertEqual(self.client.get(reverse("post_detail", args=[scheduled.slug])).status_code, 404)
-        self.assertEqual(self.client.get("/news/does-not-exist/").status_code, 404)
+        self.assertEqual(self.client.get(reverse("post_detail", args=["does-not-exist"])).status_code, 404)
 
     def test_scheduled_post_goes_live_when_time_arrives(self):
         post = make_post("Timed", live=False)
@@ -132,13 +133,14 @@ class DashboardPostTests(TestCase):
     def test_new_post_form_has_editor(self):
         response = self.client.get(reverse("dashboard:new", args=["posts"]))
         self.assertContains(response, "<trix-editor")
-        self.assertContains(response, 'type="hidden" name="content"')
+        self.assertContains(response, 'type="hidden" name="content_en"')
+        self.assertContains(response, 'type="hidden" name="content_ne"')
 
     def test_create_post_sets_author_cleans_html_and_defaults_to_draft(self):
-        response = self.client.post(reverse("dashboard:new", args=["posts"]), {
+        response = self.client.post(reverse("dashboard:new", args=["posts"]), en(Post, {
             "title": "Our new plant", "content": DIRTY,
             "published_at": "2026-11-10T10:00",
-        })
+        }))
         self.assertEqual(response.status_code, 302)
         post = Post.objects.get()
         self.assertEqual(post.author, self.staff)
@@ -159,8 +161,8 @@ class DashboardPostTests(TestCase):
     def test_editing_keeps_original_author(self):
         other = User.objects.create_user("other", password="pw12345!", is_staff=True)
         post = Post.objects.create(title="Mine", content="<div>x</div>", author=other)
-        self.client.post(reverse("dashboard:edit", args=["posts", post.pk]), {
-            "title": "Mine edited", "content": "<div>y</div>", "published_at": "2026-11-10T10:00"})
+        self.client.post(reverse("dashboard:edit", args=["posts", post.pk]), en(Post, {
+            "title": "Mine edited", "content": "<div>y</div>", "published_at": "2026-11-10T10:00"}))
         post.refresh_from_db()
         self.assertEqual(post.title, "Mine edited")
         self.assertEqual(post.author, other)
@@ -172,7 +174,7 @@ class DashboardPostTests(TestCase):
 
     def test_content_is_required(self):
         response = self.client.post(reverse("dashboard:new", args=["posts"]),
-                                    {"title": "No body", "content": "", "published_at": "2026-11-10T10:00"})
+                                    en(Post, {"title": "No body", "content": "", "published_at": "2026-11-10T10:00"}))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "This field is required")
         self.assertEqual(Post.objects.count(), 0)
@@ -198,15 +200,15 @@ class AnnouncementFrequencyTests(TestCase):
         self.assertEqual(Announcement.objects.create(title="T", message="M").show_frequency, "session")
 
     def test_staff_can_choose_frequency(self):
-        response = self.client.post(reverse("dashboard:new", args=["announcements"]), {
+        response = self.client.post(reverse("dashboard:new", args=["announcements"]), en(Announcement, {
             "title": "Offer", "message": "10% off", "show_frequency": "daily",
-            "start_at": "2026-01-01T09:00", "is_active": "on"})
+            "start_at": "2026-01-01T09:00", "is_active": "on"}))
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Announcement.objects.get().show_frequency, "daily")
 
     def test_invalid_frequency_rejected(self):
-        response = self.client.post(reverse("dashboard:new", args=["announcements"]), {
-            "title": "Offer", "message": "x", "show_frequency": "hourly", "start_at": "2026-01-01T09:00"})
+        response = self.client.post(reverse("dashboard:new", args=["announcements"]), en(Announcement, {
+            "title": "Offer", "message": "x", "show_frequency": "hourly", "start_at": "2026-01-01T09:00"}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Announcement.objects.count(), 0)
 

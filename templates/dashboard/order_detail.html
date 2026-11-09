@@ -1,0 +1,88 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Order #{{ order.pk }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'dashboard:orders' %}">Orders</a></li>
+    <li class="breadcrumb-item active">#{{ order.pk }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h1 class="h3 mb-0">Order #{{ order.pk }} <span class="fs-6 align-middle">{% include "orders/_status_badge.html" %}</span></h1>
+  <span class="text-muted">Placed {{ order.created_at|date:"d M Y, H:i" }}</span>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-xl-8">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Product</th><th>Price</th><th>Qty</th><th class="text-end">Subtotal</th></tr>
+          </thead>
+          <tbody>
+            {% for item in order.items.all %}
+              <tr>
+                <td>{{ item.product.name }}</td>
+                <td>NPR {{ item.unit_price|floatformat:2 }}</td>
+                <td>{{ item.quantity }}</td>
+                <td class="text-end">NPR {{ item.subtotal|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="3" class="text-end">Total</th>
+              <th class="text-end text-primary">NPR {{ order.total|floatformat:2 }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h2 class="h5">Delivery details</h2>
+        <p class="mb-1"><i class="bi bi-person"></i> {{ order.full_name }}</p>
+        <p class="mb-1"><i class="bi bi-telephone"></i> <a href="tel:{{ order.phone }}">{{ order.phone }}</a></p>
+        <p class="mb-1"><i class="bi bi-geo-alt"></i> {{ order.address }}</p>
+        {% if order.notes %}<p class="mb-0 text-muted"><i class="bi bi-chat-text"></i> {{ order.notes }}</p>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-4">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <h2 class="h5">Change status</h2>
+        <form method="post" action="{% url 'dashboard:order_status' order.pk %}">
+          {% csrf_token %}
+          <select name="status" class="form-select mb-2">
+            {% for value, label in statuses %}
+              <option value="{{ value }}" {% if value == order.status %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-primary w-100">Save status</button>
+        </form>
+        <p class="small text-muted mt-2 mb-0">Customers see the new status in My Orders. A customer can review once an order is Delivered.</p>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h2 class="h5">Customer</h2>
+        <p class="mb-1">
+          {% if order.customer.is_staff %}{{ order.customer }} <span class="badge bg-secondary">Staff</span>
+          {% else %}<a href="{% url 'dashboard:customer_detail' order.customer.pk %}">{{ order.customer }}</a>{% endif %}
+        </p>
+        <p class="small text-muted mb-0">@{{ order.customer.username }}{% if order.customer.email %} &middot; {{ order.customer.email }}{% endif %}</p>
+        <p class="small text-muted mb-0">Last updated {{ order.updated_at|date:"d M Y, H:i" }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

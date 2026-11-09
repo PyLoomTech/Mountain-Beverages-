@@ -3,7 +3,7 @@ The dashboard is driven by this list.
 
 Each Section describes one kind of content: which model it edits, which fields
 appear in the form, and which columns appear in the list. To manage a new kind
-of content later, add one Section here.
+of content later (posts, for example), add one Section here.
 """
 from dataclasses import dataclass
 
@@ -150,14 +150,9 @@ for _section in _SECTIONS:
     NAV_GROUPS.setdefault(_section.group, []).append(_section)
 
 # The one-page "Site content" screen (company text, banner, contact, social links)
-SITE_GROUPS = (
-    ("General and banner", "bi-house",
-     ("company_name", "tagline", "hero_title", "hero_subtitle", "hero_image")),
-    ("About page", "bi-info-circle",
-     ("about_text", "history", "vision", "mission", "core_values")),
-    ("Contact and social", "bi-telephone",
-     ("address", "phone", "email", "business_hours", "map_embed_url",
-      "facebook_url", "instagram_url", "whatsapp_number")),
+SITE_FIELDS = (
+    "company_name", "tagline", "hero_title", "hero_subtitle", "hero_image",
+    "about_text", "history", "vision", "mission", "core_values",
+    "address", "phone", "email", "business_hours", "map_embed_url",
+    "facebook_url", "instagram_url", "whatsapp_number",
 )
-
-SITE_FIELDS = tuple(name for _, _, names in SITE_GROUPS for name in names)

@@ -1,0 +1,26 @@
+{# Form fields arranged in tabs: General, then one tab per language. A single tab shows no tab bar. #}
+{% if tabs|length > 1 %}
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    {% for tab in tabs %}
+      <li class="nav-item" role="presentation">
+        <button class="nav-link {% if tab.active %}active{% endif %}" id="{{ tab.id }}-btn"
+                data-bs-toggle="tab" data-bs-target="#{{ tab.id }}" type="button" role="tab"
+                aria-controls="{{ tab.id }}" aria-selected="{% if tab.active %}true{% else %}false{% endif %}">
+          <i class="bi {{ tab.icon }}"></i> {{ tab.title }}
+          {% if tab.has_errors %}<span class="badge bg-danger">!</span>{% endif %}
+        </button>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<div class="tab-content">
+  {% for tab in tabs %}
+    <div class="tab-pane fade {% if tab.active %}show active{% endif %}" id="{{ tab.id }}" role="tabpanel" tabindex="0">
+      {% if tab.hint %}<p class="text-muted small">{{ tab.hint }}</p>{% endif %}
+      {% for field in tab.fields %}
+        {% include "dashboard/_field.html" %}
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>

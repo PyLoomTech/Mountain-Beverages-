@@ -14,9 +14,9 @@ from orders.models import Order
 from projects.models import Project, ProjectImage
 from reviews.models import Review
 
-from .forms import MAX_IMAGE_MB, build_form_class, validate_image_size
+from .forms import MAX_IMAGE_MB, build_form_class, build_tabs, validate_image_size
 from .permissions import staff_required
-from .registry import NAV_GROUPS, SECTIONS, SITE_FIELDS, SITE_GROUPS
+from .registry import NAV_GROUPS, SECTIONS, SITE_FIELDS
 
 PAGE_SIZE = 15
 
@@ -25,10 +25,19 @@ PAGE_SIZE = 15
 # Helpers
 # ---------------------------------------------------------------------------
 
+def sidebar_badges():
+    """Numbers shown next to Orders, Reviews and Messages in the sidebar."""
+    return {
+        "orders": Order.objects.filter(status="pending").count(),
+        "reviews": Review.objects.filter(status="pending").count(),
+        "inbox": ContactMessage.objects.filter(is_read=False).count(),
+    }
+
+
 def page(request, template, context=None, active=""):
     """Render a dashboard page with the sidebar information added."""
     context = dict(context or {})
-    context.update({"nav_groups": NAV_GROUPS, "active": active})
+    context.update({"nav_groups": NAV_GROUPS, "active": active, "badges": sidebar_badges()})
     return render(request, template, context)
 
 
@@ -72,26 +81,25 @@ def home(request):
         for section in SECTIONS.values()
     ]
 
-    # Orders, reviews and messages move into the dashboard in a later step.
-    # Until then these cards open the matching Django admin screen.
+    badges = sidebar_badges()
     work_cards = [
         {
             "label": "Pending orders",
-            "count": Order.objects.filter(status="pending").count(),
+            "count": badges["orders"],
             "icon": "bi-receipt",
-            "url": reverse("admin:orders_order_changelist") + "?status__exact=pending",
+            "url": reverse("dashboard:orders") + "?status=pending",
         },
         {
             "label": "Reviews to approve",
-            "count": Review.objects.filter(status="pending").count(),
+            "count": badges["reviews"],
             "icon": "bi-star-half",
-            "url": reverse("admin:reviews_review_changelist") + "?status__exact=pending",
+            "url": reverse("dashboard:reviews") + "?status=pending",
         },
         {
             "label": "Unread messages",
-            "count": ContactMessage.objects.filter(is_read=False).count(),
+            "count": badges["inbox"],
             "icon": "bi-envelope",
-            "url": reverse("admin:core_contactmessage_changelist") + "?is_read__exact=0",
+            "url": reverse("dashboard:inbox") + "?filter=unread",
         },
     ]
 
@@ -120,22 +128,9 @@ def site_content(request):
     else:
         form = Form(instance=site)
 
-    tabs = []
-    for index, (title, icon, names) in enumerate(SITE_GROUPS):
-        tabs.append({
-            "id": f"tab{index}",
-            "title": title,
-            "icon": icon,
-            "fields": [form[name] for name in names],
-            "has_errors": any(form[name].errors for name in names),
-        })
+    tabs = build_tabs(form, SiteSettings, SITE_FIELDS)
 
-    # Open the first tab that has an error, otherwise the first tab
-    active_tab = next((tab["id"] for tab in tabs if tab["has_errors"]), tabs[0]["id"])
-
-    return page(request, "dashboard/site_form.html", {
-        "form": form, "tabs": tabs, "active_tab": active_tab,
-    }, active="site")
+    return page(request, "dashboard/site_form.html", {"form": form, "tabs": tabs}, active="site")
 
 
 # ---------------------------------------------------------------------------
@@ -196,7 +191,10 @@ def section_form(request, key, pk=None):
     else:
         form = Form(instance=instance)
 
-    context = {"section": section, "form": form, "instance": instance, "max_image_mb": MAX_IMAGE_MB}
+    context = {
+        "section": section, "form": form, "instance": instance, "max_image_mb": MAX_IMAGE_MB,
+        "tabs": build_tabs(form, section.model, section.fields),
+    }
     if section.has_gallery and instance is not None:
         context["gallery"] = instance.images.order_by("id")
 
@@ -221,7 +219,13 @@ def section_delete(request, key, pk):
         messages.success(request, f"{section.singular} “{obj}” deleted.")
         return redirect("dashboard:list", key=key)
 
-    return page(request, "dashboard/confirm_delete.html", {"section": section, "obj": obj}, active=section.key)
+    return page(request, "dashboard/confirm_delete.html", {
+        "title": f"Delete {section.singular.lower()}?",
+        "obj": obj,
+        "cancel_url": reverse("dashboard:list", args=[key]),
+        "hint": "If you only want to take it off the website for now, use Show/Hide in the list instead."
+                if section.toggle_field else "",
+    }, active=section.key)
 
 
 @staff_required

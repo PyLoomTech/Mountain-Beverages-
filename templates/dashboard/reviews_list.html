@@ -1,0 +1,86 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Reviews{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-1"><i class="bi bi-star-half text-primary"></i> Reviews</h1>
+<p class="text-muted">Only approved reviews appear on the website.</p>
+
+<ul class="nav nav-pills mb-3 flex-wrap">
+  {% for tab in tabs %}
+    <li class="nav-item">
+      <a class="nav-link {% if tab.active %}active{% endif %}" href="?{% if tab.value %}status={{ tab.value }}{% endif %}{% if q %}{% if tab.value %}&{% endif %}q={{ q|urlencode }}{% endif %}">
+        {{ tab.label }} <span class="badge bg-light text-dark">{{ tab.count }}</span>
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+
+<form method="get" class="row g-2 mb-3">
+  {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+  <div class="col-12 col-md-5 col-lg-4">
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Search comment or customer...">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-primary" type="submit">Search</button>
+    {% if q %}<a href="?{% if status %}status={{ status }}{% endif %}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+  </div>
+</form>
+
+{% for review in page_obj %}
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between flex-wrap gap-2">
+        <div>
+          <strong>{{ review.customer }}</strong>
+          <span class="text-muted small">&middot; {{ review.created_at|date:"d M Y" }}</span>
+          <div>
+            {% for i in "12345" %}
+              {% if forloop.counter <= review.rating %}<i class="bi bi-star-fill text-warning"></i>{% else %}<i class="bi bi-star text-warning"></i>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        <div>
+          {% if review.status == "approved" %}<span class="badge bg-success">Approved</span>
+          {% elif review.status == "rejected" %}<span class="badge bg-danger">Rejected</span>
+          {% else %}<span class="badge bg-warning text-dark">Pending</span>{% endif %}
+        </div>
+      </div>
+
+      <p class="my-3">“{{ review.comment|linebreaksbr }}”</p>
+
+      <div class="d-flex flex-wrap gap-2">
+        {% if review.status != "approved" %}
+          <form method="post" action="{% url 'dashboard:review_status' review.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="approved">
+            <input type="hidden" name="next" value="{{ current_url }}">
+            <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> Approve</button>
+          </form>
+        {% endif %}
+        {% if review.status != "rejected" %}
+          <form method="post" action="{% url 'dashboard:review_status' review.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="rejected">
+            <input type="hidden" name="next" value="{{ current_url }}">
+            <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-lg"></i> Reject</button>
+          </form>
+        {% endif %}
+        {% if review.status != "pending" %}
+          <form method="post" action="{% url 'dashboard:review_status' review.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="pending">
+            <input type="hidden" name="next" value="{{ current_url }}">
+            <button type="submit" class="btn btn-sm btn-outline-secondary">Set to pending</button>
+          </form>
+        {% endif %}
+        <a href="{% url 'dashboard:review_delete' review.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</a>
+      </div>
+    </div>
+  </div>
+{% empty %}
+  <div class="card shadow-sm border-0"><div class="card-body text-center text-muted py-5">No reviews found.</div></div>
+{% endfor %}
+
+{% include "dashboard/_pager.html" %}
+{% endblock %}

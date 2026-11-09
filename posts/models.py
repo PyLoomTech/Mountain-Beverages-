@@ -43,9 +43,21 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = unique_slug(self, self.title)
-        # Whatever way a post is saved (dashboard, admin, shell), the HTML is made safe
-        self.content = clean_html(self.content)
+        self.clean_rich_text()
         super().save(*args, **kwargs)
+
+    def clean_rich_text(self):
+        """
+        Whatever way a post is saved (dashboard, admin, shell), the HTML is made safe.
+
+        With several languages the text is stored once per language (content_en,
+        content_ne), so every stored version is cleaned, not just the one for the
+        language that happens to be active.
+        """
+        per_language = [f"content_{code}" for code, _ in settings.LANGUAGES]
+        names = [name for name in per_language if hasattr(self, name)] or ["content"]
+        for name in names:
+            setattr(self, name, clean_html(getattr(self, name)))
 
     @property
     def is_live(self):

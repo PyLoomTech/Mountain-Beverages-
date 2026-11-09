@@ -12,6 +12,7 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv(
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
 
 INSTALLED_APPS = [
+    "modeltranslation",  # must come before django.contrib.admin
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -32,6 +33,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",            # picks the language from the URL
+    "core.middleware.StaffPanelInEnglishMiddleware",        # dashboard and admin stay English
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -50,6 +53,7 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                "django.template.context_processors.i18n",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.site_settings",
@@ -78,7 +82,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "en-us"
+# ---------- Languages ----------
+LANGUAGE_CODE = "en"
+LANGUAGES = [
+    ("en", "English"),
+    ("ne", "नेपाली"),
+]
+LOCALE_PATHS = [BASE_DIR / "locale"]  # translated interface text (Step 13B)
+
+# django-modeltranslation: text entered in the dashboard is stored once per language.
+# If a Nepali field is empty, visitors see the English text instead.
+MODELTRANSLATION_DEFAULT_LANGUAGE = "en"
+MODELTRANSLATION_FALLBACK_LANGUAGES = ("en",)
+
 TIME_ZONE = "Asia/Kathmandu"
 USE_I18N = True
 USE_TZ = True

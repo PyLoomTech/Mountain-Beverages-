@@ -1,12 +1,33 @@
 from django.urls import path
 
-from . import views
+from . import ops_views, views
 
 app_name = "dashboard"
 
 urlpatterns = [
     path("", views.home, name="home"),
     path("site-content/", views.site_content, name="site"),
+
+    # Orders
+    path("orders/", ops_views.orders_list, name="orders"),
+    path("orders/<int:pk>/", ops_views.order_detail, name="order_detail"),
+    path("orders/<int:pk>/status/", ops_views.order_status, name="order_status"),
+
+    # Reviews
+    path("reviews/", ops_views.reviews_list, name="reviews"),
+    path("reviews/<int:pk>/status/", ops_views.review_status, name="review_status"),
+    path("reviews/<int:pk>/delete/", ops_views.review_delete, name="review_delete"),
+
+    # Contact messages
+    path("messages/", ops_views.inbox, name="inbox"),
+    path("messages/<int:pk>/", ops_views.message_detail, name="message_detail"),
+    path("messages/<int:pk>/unread/", ops_views.message_unread, name="message_unread"),
+    path("messages/<int:pk>/delete/", ops_views.message_delete, name="message_delete"),
+
+    # Customers
+    path("customers/", ops_views.customers_list, name="customers"),
+    path("customers/<int:pk>/", ops_views.customer_detail, name="customer_detail"),
+    path("customers/<int:pk>/active/", ops_views.customer_active, name="customer_active"),
 
     # Project gallery
     path("projects/<int:pk>/gallery/add/", views.gallery_add, name="gallery_add"),

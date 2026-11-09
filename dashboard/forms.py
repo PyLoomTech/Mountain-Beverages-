@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.html import format_html
 
+from . import i18n
+
 MAX_IMAGE_MB = 5
 
 
@@ -45,6 +47,7 @@ class StyledModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         for field in self.fields.values():
             widget = field.widget
             if isinstance(widget, forms.CheckboxInput):
@@ -64,14 +67,64 @@ class StyledModelForm(forms.ModelForm):
                 field.validators.append(validate_image_size)
                 widget.attrs["accept"] = "image/*"
 
+            field.label = i18n.clean_label(field.label)  # "Name [en]" -> "Name"
+
+        # Translated fields: the default language is required when the original field is,
+        # every other language is optional (visitors then see the default language).
+        model = self._meta.model
+        default_code = i18n.default_language()
+        for name in i18n.translated_names(model):
+            if not model._meta.get_field(name).blank:
+                field = self.fields.get(i18n.localized_name(name, default_code))
+                if field is not None:
+                    field.required = True
+                    field.widget.is_required = True
+
 
 def build_form_class(model, fields, rich_fields=()):
     """Create a form for the given model and field names.
 
-    Fields listed in rich_fields use the rich-text editor instead of a plain box.
+    Translated fields are replaced by one field per language. Fields listed in
+    rich_fields use the rich-text editor instead of a plain box.
     """
-    widgets = {name: TrixWidget() for name in rich_fields}
+    names = i18n.expand(model, fields)
+    widgets = {name: TrixWidget() for name in i18n.expand(model, rich_fields)}
     return forms.modelform_factory(
-        model, form=StyledModelForm, fields=list(fields),
+        model, form=StyledModelForm, fields=names,
         widgets=widgets, formfield_callback=_formfield,
     )
+
+
+def build_tabs(form, model, fields):
+    """
+    Arrange a form into tabs: General (fields that are not translated), then one tab
+    per language. With no translated fields there is a single General tab.
+    """
+    translated = i18n.translated_names(model)
+
+    general = [form[name] for name in fields if name not in translated]
+    tabs = []
+    if general:
+        tabs.append({"id": "tab-general", "title": "General", "icon": "bi-sliders", "fields": general})
+
+    if translated:
+        default_code = i18n.default_language()
+        default_label = dict(i18n.languages()).get(default_code, default_code)
+        for code, label in i18n.languages():
+            tabs.append({
+                "id": f"tab-{code}",
+                "title": label,
+                "icon": "bi-translate",
+                "hint": "" if code == default_code else
+                        f"Optional. Anything left empty is shown to visitors in {default_label}.",
+                "fields": [form[i18n.localized_name(name, code)] for name in fields if name in translated],
+            })
+
+    for tab in tabs:
+        tab["has_errors"] = any(field.errors for field in tab["fields"])
+
+    # Open the first tab that has an error, otherwise the first tab
+    active = next((tab["id"] for tab in tabs if tab["has_errors"]), tabs[0]["id"])
+    for tab in tabs:
+        tab["active"] = tab["id"] == active
+    return tabs
